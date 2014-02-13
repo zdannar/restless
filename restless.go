@@ -14,7 +14,6 @@ func GetAll(c *mgo.Collection, ip interface{}) {
    c.Find(nil).All(ip)
 }
 
-
 func Insert(c *mgo.Collection, i interface{}) (string, error) {
     info, err := c.Upsert(bson.M{"_id" : nil}, i)
     id := info.UpsertedId.(bson.ObjectId)
@@ -33,108 +32,113 @@ func UpdateId(c *mgo.Collection, i interface{}, id bson.ObjectId) error {
    return c.UpdateId(id, i)
 }
 
-func GetShapeHandler(s *mgo.Session, dbName string, colName string, cns Constructor) http.HandlerFunc {
+func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructor) http.HandlerFunc {
    return func(w http.ResponseWriter, r *http.Request) {
-       var jdata []byte
 
-       var err error
-       ns := s.Clone()
-       defer ns.Close()
+        var jdata []byte
+        var err error
 
-       col := ns.DB(dbName).C(colName)
+        ns := s.Clone()
+        defer ns.Close()
 
-       if r.Method == "GET" {
-           i := cns.Slice()
-           //TODO: Add ability to queary specifics
-           GetAll(col, i)
-           jdata, _ = json.Marshal(i)
-       }
+        col := ns.DB(dbName).C(colName)
+        
+        switch r.Method {
+            //TODO: Add ability to queary specifics
+            case "GET":
+                i := cns.Slice()
+                GetAll(col, i)
+                jdata, err = json.Marshal(i)
 
-       if r.Method == "POST" {
-           i := cns.Single()
-           err = r.ParseForm()
-           if err != nil {
-               http.Error(w, "Unable to parse form", http.StatusNoContent)
-           }
+                w.Header().Add("Content-Type", "application/json")
+                fmt.Fprintf(w, "%s", jdata)
 
-           jString := []byte(r.PostForm.Get("json"))
-           err = json.Unmarshal(jString, i)
-           if err != nil {
-               log.Panicf("UnMarshal error : %s", err)
-           }
+            case "PUT":
+                var lastId string 
 
-           lastId, err := Insert(col, i)
-           if err != nil  {
-               log.Panicf("Insert Error : %#v", err)
-           }
-           jdata, _ = json.Marshal(i)
+                i := cns.Single()
+                if err = r.ParseForm(); err != nil {
+                    http.Error(w, "Unable to parse form", http.StatusBadRequest)
+                    log.Panicf("%s", err)
+                }
 
-           w.Header().Add("Location", fmt.Sprintf("%s/%s", r.URL, lastId))
-           w.WriteHeader(http.StatusCreated)
+                jString := []byte(r.PostForm.Get("json"))
+                if err = json.Unmarshal(jString, i); err != nil {
+                    http.Error(w, "Unable to unmarshal data", http.StatusBadRequest)
+                    log.Panicf("UnMarshal error : %s", err)
+                }
 
-       }
+                if lastId, err := Insert(col, i); err != nil {
+                    log.Panicf("Insert Error : %#v", err)
+                }
 
-
-       w.Header().Add("Content-Type", "application/json")
-
-       fmt.Fprintf(w,"%s", jdata)
-    }
+                if jdata, err = json.Marshal(i); err != nil {
+                    http.Error(w, "Marshal error", http.StatusInternalServerError)
+                }
+                w.Header().Add("Location", fmt.Sprintf("%s/%s", r.URL, lastId))
+                w.WriteHeader(http.StatusCreated)
+        }
+        return
 }
 
-func GetShapeByIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor) http.HandlerFunc {
+func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor) http.HandlerFunc {
    return func (w http.ResponseWriter, r *http.Request) {
 
-       var jdata []byte
-       var err error
+        var jdata []byte
+        var err error
+        var ids string
 
-       ns := s.Clone()
-       defer ns.Close()
-       vars := mux.Vars(r)
-       ids := vars["id"]
+        ns := s.Clone()
+        defer ns.Close()
 
-       col := ns.DB(dbName).C(colName)
+        vars := mux.Vars(r)
+        ids = vars["id"]
 
-       if !bson.IsObjectIdHex(ids) {
-            log.Panicf("ObjectId(%s) is not hex", ids)
-       }
+        col := ns.DB(dbName).C(colName)
 
-       id := bson.ObjectIdHex(ids)
+        if !bson.IsObjectIdHex(ids) {
+            http.Error(w, "Provided ID is unknown", http.StatusNotFound)
+            return
+        }
 
-       i := cns.Single()
-       //Get Object regardless, Reconsider later
-       err = GetId(col, i, id)
-       if err != nil {
-            log.Panic("Unknown object")
-       }
+        id := bson.ObjectIdHex(ids)
+        i := cns.Single()
 
-       //TODO: Another error to catch
-       jdata, _ = json.Marshal(i)
+        if err = GetId(col, i, id); err != nil {
+            http.Error(w, "Provided ID is unknown", http.StatusNotFound)
+            return 
+        }
 
-       if r.Method == "PUT" {
-           err := r.ParseForm()
-           if err != nil {
-               http.Error(w, "Unable to parse form", http.StatusNoContent)
-           }
-           //TODO: Need error handling
-           ijson :=  r.PostForm.Get("json")
-           err = json.Unmarshal([]byte(ijson), i)
-           if err != nil {
-               log.Panicf("UnMarshal error : %s", err)
-           }
+        if jdata, err := json.Marshal(i); err != nil {
+            http.Error(w, "", http.StatusBadRequest)
+        }
 
-           //TODO : Need to handle false insert and hand back method
-           UpdateId(col, i, id)
-       }
 
-       if r.Method == "DELETE" {
-            //TODO: Catch Error
-            err = RemoveId(col, id) 
-            if err != nil {
-               log.Panicf("Failed to remove id %s; error : %s", id, err)
-            }
-       }
-       w.Header().Add("Content-Type", "application/json")
-       fmt.Fprintf(w, "%s", jdata)
-       return
-    }
+        switch r.Method {
+            case "GET":
+                w.Header().Add("Content-Type", "application/json")
+                fmt.Fprintf(w, "%s", jdata)
+
+            case "PUT":
+                if r.ParseForm(); err != nil {
+                    http.Error(w, "", http.StatusBadRequest)
+                }
+
+                if err = json.Unmarshal([]byte(r.PostForm.Get("json")), i); err != nil {
+                    http.Error(w, "", http.StatusBadRequest)
+                    log.Panicf("UnMarshal error : %s", err)
+                }
+
+                if err = UpdateId(col, i, id); err != nil {
+                    http.Error(w, "Failed to update provided ID", http.StatusInternalServerError)
+                    log.Panicf("UnMarshal error : %s", err)
+                }
+
+            case "DELETE":
+                if err = RemoveId(col, id); err != nil { 
+                    http.Error(w, "Failed to remove provided ID", http.StatusInternalServerError)
+                    log.Panicf("Failed to remove id %s; error : %s", id, err)
+                }
+        }
+        return 
 }
