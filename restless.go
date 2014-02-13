@@ -68,7 +68,7 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
                     log.Panicf("UnMarshal error : %s", err)
                 }
 
-                if lastId, err := Insert(col, i); err != nil {
+                if lastId, err = Insert(col, i); err != nil {
                     log.Panicf("Insert Error : %#v", err)
                 }
 
@@ -79,6 +79,7 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
                 w.WriteHeader(http.StatusCreated)
         }
         return
+    }
 }
 
 func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor) http.HandlerFunc {
@@ -109,7 +110,7 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
             return 
         }
 
-        if jdata, err := json.Marshal(i); err != nil {
+        if jdata, err = json.Marshal(i); err != nil {
             http.Error(w, "", http.StatusBadRequest)
         }
 
@@ -141,4 +142,5 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
                 }
         }
         return 
+    }
 }

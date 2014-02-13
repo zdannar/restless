@@ -1,6 +1,7 @@
 package restless
 
 import (
+    "labix.org/v2/mgo/bson"
 )
 
 
