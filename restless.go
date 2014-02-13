@@ -42,10 +42,12 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
         defer ns.Close()
 
         col := ns.DB(dbName).C(colName)
+
         
         switch r.Method {
             //TODO: Add ability to queary specifics
             case "GET":
+                log.Debugf("IM IN GET")
                 i := cns.Slice()
                 GetAll(col, i)
                 jdata, err = json.Marshal(i)
@@ -53,23 +55,26 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
                 w.Header().Add("Content-Type", "application/json")
                 fmt.Fprintf(w, "%s", jdata)
 
-            case "PUT":
+            case "POST":
                 var lastId string 
 
                 i := cns.Single()
                 if err = r.ParseForm(); err != nil {
                     http.Error(w, "Unable to parse form", http.StatusBadRequest)
-                    log.Panicf("%s", err)
+                    log.Errorf("Parsing form : %s", err)
                 }
 
                 jString := []byte(r.PostForm.Get("json"))
                 if err = json.Unmarshal(jString, i); err != nil {
                     http.Error(w, "Unable to unmarshal data", http.StatusBadRequest)
-                    log.Panicf("UnMarshal error : %s", err)
+                    log.Errorf("UnMarshal error : %s", err)
+                    return
                 }
 
                 if lastId, err = Insert(col, i); err != nil {
-                    log.Panicf("Insert Error : %#v", err)
+                    http.Error(w, "Unable to unmarshal data", http.StatusInternalServerError)
+                    log.Error("Insert Error : %#v", err)
+                    return
                 }
 
                 if jdata, err = json.Marshal(i); err != nil {
@@ -127,18 +132,18 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
 
                 if err = json.Unmarshal([]byte(r.PostForm.Get("json")), i); err != nil {
                     http.Error(w, "", http.StatusBadRequest)
-                    log.Panicf("UnMarshal error : %s", err)
+                    log.Errorf("UnMarshal error : %s", err)
                 }
 
                 if err = UpdateId(col, i, id); err != nil {
                     http.Error(w, "Failed to update provided ID", http.StatusInternalServerError)
-                    log.Panicf("UnMarshal error : %s", err)
+                    log.Errorf("UnMarshal error : %s", err)
                 }
 
             case "DELETE":
                 if err = RemoveId(col, id); err != nil { 
                     http.Error(w, "Failed to remove provided ID", http.StatusInternalServerError)
-                    log.Panicf("Failed to remove id %s; error : %s", id, err)
+                    log.Errorf("Failed to remove id %s; error : %s", id, err)
                 }
         }
         return 
