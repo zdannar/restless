@@ -7,7 +7,7 @@ import (
     "net/http"
 )
 
-func ListenAndServe(netaddr string) {
+func ListenAndServe() {
     http.ListenAndServe(APIServAddr, nil)
 }
 
