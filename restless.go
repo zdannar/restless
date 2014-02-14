@@ -4,7 +4,6 @@ import (
     "encoding/json"
     "fmt"
     "github.com/gorilla/mux"
-    log "github.com/zdannar/flogger"
     "labix.org/v2/mgo"
     "labix.org/v2/mgo/bson"
     "net/http"
@@ -46,7 +45,6 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
         switch r.Method {
         //TODO: Add ability to queary specifics
         case "GET":
-            log.Debugf("IM IN GET")
             i := cns.Slice()
             GetAll(col, i)
             jdata, err = json.Marshal(i)
@@ -60,19 +58,19 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
             i := cns.Single()
             if err = r.ParseForm(); err != nil {
                 http.Error(w, "Unable to parse form", http.StatusBadRequest)
-                log.Errorf("Parsing form : %s", err)
+                Log.Errorf("Parsing form : %s", err)
             }
 
             jString := []byte(r.PostForm.Get("json"))
             if err = json.Unmarshal(jString, i); err != nil {
                 http.Error(w, "Unable to unmarshal data", http.StatusBadRequest)
-                log.Errorf("UnMarshal error : %s", err)
+                Log.Errorf("UnMarshal error : %s", err)
                 return
             }
 
             if lastId, err = Insert(col, i); err != nil {
                 http.Error(w, "Unable to unmarshal data", http.StatusInternalServerError)
-                log.Error("Insert Error : %#v", err)
+                Log.Error("Insert Error : %#v", err)
                 return
             }
 
@@ -130,18 +128,18 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
 
             if err = json.Unmarshal([]byte(r.PostForm.Get("json")), i); err != nil {
                 http.Error(w, "", http.StatusBadRequest)
-                log.Errorf("UnMarshal error : %s", err)
+                Log.Errorf("UnMarshal error : %s", err)
             }
 
             if err = UpdateId(col, i, id); err != nil {
                 http.Error(w, "Failed to update provided ID", http.StatusInternalServerError)
-                log.Errorf("UnMarshal error : %s", err)
+                Log.Errorf("UnMarshal error : %s", err)
             }
 
         case "DELETE":
             if err = RemoveId(col, id); err != nil {
                 http.Error(w, "Failed to remove provided ID", http.StatusInternalServerError)
-                log.Errorf("Failed to remove id %s; error : %s", id, err)
+                Log.Errorf("Failed to remove id %s; error : %s", id, err)
             }
         }
         return
