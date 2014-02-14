@@ -38,7 +38,7 @@ func getsess() (*mgo.Session, error) {
     if err = getmogurl(); err != nil {
         return nil, err
     }
-    Log.Info("Establishing MongoDB connection for cloning(%s)", MongoUrl)
+    Log.Infof("Establishing MongoDB connection for cloning(%s)", MongoUrl)
     return mgo.Dial(MongoUrl)
 }
 
