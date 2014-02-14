@@ -1,9 +1,8 @@
 package restless
 
-import (
-)
+import ()
 
 type Constructor interface {
     Single() interface{}
-    Slice()  interface{}
+    Slice() interface{}
 }

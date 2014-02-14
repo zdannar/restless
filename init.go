@@ -1,6 +1,12 @@
 package restless
 
+import (
+    "errors"
+    "labix.org/v2/mgo"
+)
+
 var Log Logger
+
 type Logger interface {
     Debugf(string, ...interface{})
     Errorf(string, ...interface{})
@@ -10,8 +16,9 @@ type Logger interface {
 }
 
 var (
-    ErrInvalidMongoUrl = errors.New("restless.MongoUrl is not set and a valid MongoDb session was not provided to restless.Session")
-    Session *mgo.Session = nil
-    MongoUrl = "NULL"
-    APIServAddr = "localhost:8080"
+    Session     *mgo.Session = nil
+    MongoUrl                 = "NULL"
+    APIServAddr              = "localhost:8080"
 )
+
+var ErrInvalidMongoUrl = errors.New("restless.MongoUrl is not set and a valid MongoDb session was not provided to restless.Session")
