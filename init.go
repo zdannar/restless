@@ -18,7 +18,7 @@ type Logger interface {
 var (
     Session     *mgo.Session = nil
     MongoUrl                 = "NULL"
-    APIServAddr              = "localhost:8080"
+    APIServAddr              = ":8080"
 )
 
 var ErrInvalidMongoUrl = errors.New("restless.MongoUrl is not set and a valid MongoDb session was not provided to restless.Session")
