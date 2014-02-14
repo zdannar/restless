@@ -8,7 +8,7 @@ import (
 )
 
 func ListenAndServe() {
-    log.Infof("RESTLESS started on %s", APIServAddr)
+    Log.Infof("RESTLESS started on %s", APIServAddr)
     http.ListenAndServe(APIServAddr, nil)
 }
 
@@ -38,7 +38,7 @@ func getsess() (*mgo.Session, error) {
     if err = getmogurl(); err != nil {
         return nil, err
     }
-    log.Info("Establishing MongoDB connection for cloning(%s)", MongoUrl)
+    Log.Info("Establishing MongoDB connection for cloning(%s)", MongoUrl)
     return mgo.Dial(MongoUrl)
 }
 
