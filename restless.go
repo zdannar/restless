@@ -70,7 +70,7 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
 
             if lastId, err = Insert(col, i); err != nil {
                 http.Error(w, "Unable to unmarshal data", http.StatusInternalServerError)
-                Log.Error("Insert Error : %#v", err)
+                Log.Errorf("Insert Error : %#v", err)
                 return
             }
 
