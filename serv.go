@@ -20,7 +20,7 @@ func Register(dbname, collection string, constructor Constructor) error {
     }
 
     colRoot := fmt.Sprintf("/%s", collection)
-    colIdRoot := fmt.Sprintf("%s/id", colRoot)
+    colIdRoot := fmt.Sprintf("%s/{id}", colRoot)
 
     r := mux.NewRouter()
     r.HandleFunc(colRoot, GetGenHandler(session, dbname, collection, constructor))
