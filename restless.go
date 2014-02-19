@@ -50,7 +50,7 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
             jdata, err = json.Marshal(i)
 
             w.Header().Add("Content-Type", "application/json")
-            fmt.Fprintf(w, "%s", jdata)
+            fmt.Fprintf(w, "[]%s=%s", colName, jdata)
 
         case "POST":
             var lastId string
@@ -119,7 +119,7 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
         switch r.Method {
         case "GET":
             w.Header().Add("Content-Type", "application/json")
-            fmt.Fprintf(w, "%s", jdata)
+            fmt.Fprintf(w, "%s=%s", colName, jdata)
 
         case "PUT":
             if r.ParseForm(); err != nil {
