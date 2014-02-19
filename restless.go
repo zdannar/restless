@@ -61,7 +61,7 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
                 Log.Errorf("Parsing form : %s", err)
             }
 
-            jString := []byte(r.PostForm.Get("json"))
+            jString := []byte(r.PostForm.Get(colName))
             if err = json.Unmarshal(jString, i); err != nil {
                 http.Error(w, "Unable to unmarshal data", http.StatusBadRequest)
                 Log.Errorf("UnMarshal error : %s", err)
@@ -127,7 +127,7 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
                 http.Error(w, "", http.StatusBadRequest)
             }
 
-            if err = json.Unmarshal([]byte(r.PostForm.Get("json")), i); err != nil {
+            if err = json.Unmarshal([]byte(r.PostForm.Get(colName)), i); err != nil {
                 http.Error(w, "", http.StatusBadRequest)
                 Log.Errorf("UnMarshal error : %s", err)
             }
