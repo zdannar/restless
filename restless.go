@@ -96,6 +96,7 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
 
         vars := mux.Vars(r)
         ids = vars["id"]
+        Log.Debugf("Provided ID = %s", ids)
 
         col := ns.DB(dbName).C(colName)
 

@@ -7,12 +7,14 @@ import (
     "net/http"
 )
 
+var router *mux.Router
+
 func ListenAndServe() {
     Log.Infof("RESTLESS started on %s", APIServAddr)
     http.ListenAndServe(APIServAddr, nil)
 }
 
-func Register(dbname, collection string, constructor Constructor) error {
+func AddHandler(dbname, collection string, constructor Constructor) error {
 
     session, err := getsess()
     if err != nil {
@@ -22,12 +24,24 @@ func Register(dbname, collection string, constructor Constructor) error {
     colRoot := fmt.Sprintf("/%s", collection)
     colIdRoot := fmt.Sprintf("%s/{id}", colRoot)
 
-    r := mux.NewRouter()
-    r.HandleFunc(colRoot, GetGenHandler(session, dbname, collection, constructor))
-    r.HandleFunc(colIdRoot, GetIdHandler(session, dbname, collection, constructor))
-    http.Handle(colRoot, r)
+    Log.Debugf("Adding general handler (%s)", colRoot)
+    Log.Debugf("Adding ID based handler (%s)", colIdRoot)
+
+    if router == nil {
+        router = mux.NewRouter()
+    }
+
+    router.HandleFunc(colRoot, GetGenHandler(session, dbname, collection, constructor))
+    router.HandleFunc(colIdRoot, GetIdHandler(session, dbname, collection, constructor))
     return nil
 }
+
+func Register() {
+    rpath := "/"
+    Log.Debugf("Setting root handler (%s)", rpath)
+    http.Handle(rpath, router)
+}
+
 
 func getsess() (*mgo.Session, error) {
     var err error
