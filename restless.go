@@ -146,3 +146,41 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
         return
     }
 }
+
+/*
+package main
+
+import (
+    "encoding/json"
+    "fmt"
+    "reflect"
+)
+
+type Thing struct {
+    X string `json:"x"`
+    Y string `json:"y"`
+}
+
+func foo(jdata []byte, i interface{}) {
+
+    t := reflect.TypeOf(i)
+    ts := reflect.New(reflect.SliceOf(t)).Interface()
+    err := json.Unmarshal(jdata, ts)
+    if err != nil {
+        fmt.Printf("\nDarn : %s\n", err)
+    }
+    fmt.Printf("thing slice : %#v\n", ts)
+}
+
+func main() {
+    things := []Thing{Thing{"z", "y"}, Thing{"a", "b"}}
+    jdata, err := json.Marshal(things)
+    if err != nil {
+        fmt.Printf("Unmarshal error : %s", err)
+    }
+
+    fmt.Printf("JDATA : %s\n", jdata)
+    foo(jdata, Thing{})
+}
+
+*/
