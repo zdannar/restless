@@ -14,7 +14,7 @@ func ListenAndServe() {
     http.ListenAndServe(APIServAddr, nil)
 }
 
-func AddHandler(dbname, collection string, constructor Constructor) error {
+func AddHandler(dbname, collection string, ytype interface{}) error {
 
     session, err := getsess()
     if err != nil {
@@ -31,8 +31,8 @@ func AddHandler(dbname, collection string, constructor Constructor) error {
         router = mux.NewRouter()
     }
 
-    router.HandleFunc(colRoot, GetGenHandler(session, dbname, collection, constructor))
-    router.HandleFunc(colIdRoot, GetIdHandler(session, dbname, collection, constructor))
+    router.HandleFunc(colRoot, GetGenHandler(session, dbname, collection, ytype))
+    router.HandleFunc(colIdRoot, GetIdHandler(session, dbname, collection, ytype))
     return nil
 }
 

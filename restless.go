@@ -7,6 +7,7 @@ import (
     "labix.org/v2/mgo"
     "labix.org/v2/mgo/bson"
     "net/http"
+    "reflect"
 )
 
 func GetAll(c *mgo.Collection, ip interface{}) {
@@ -31,7 +32,7 @@ func UpdateId(c *mgo.Collection, i interface{}, id bson.ObjectId) error {
     return c.UpdateId(id, i)
 }
 
-func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructor) http.HandlerFunc {
+func GetGenHandler(s *mgo.Session, dbName string, colName string, n interface{}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 
         var jdata []byte
@@ -45,7 +46,7 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
         switch r.Method {
         //TODO: Add ability to queary specifics
         case "GET":
-            i := cns.Slice()
+            i := reflect.New(reflect.SliceOf(reflect.TypeOf(n))).Interface()
             GetAll(col, i)
             jdata, err = json.Marshal(i)
 
@@ -55,7 +56,8 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
         case "POST":
             var lastId string
 
-            i := cns.Single()
+            i := reflect.New(reflect.TypeOf(n)).Interface()
+
             if err = r.ParseForm(); err != nil {
                 http.Error(w, "Unable to parse form", http.StatusBadRequest)
                 Log.Errorf("Parsing form : %s", err)
@@ -84,7 +86,7 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, cns Constructo
     }
 }
 
-func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor) http.HandlerFunc {
+func GetIdHandler(s *mgo.Session, dbName string, colName string, n interface{}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 
         var jdata []byte
@@ -106,7 +108,7 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
         }
 
         id := bson.ObjectIdHex(ids)
-        i := cns.Single()
+        i := reflect.New(reflect.TypeOf(n)).Interface()
 
         if err = GetId(col, i, id); err != nil {
             http.Error(w, "Provided ID is unknown", http.StatusNotFound)
@@ -146,41 +148,3 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, cns Constructor
         return
     }
 }
-
-/*
-package main
-
-import (
-    "encoding/json"
-    "fmt"
-    "reflect"
-)
-
-type Thing struct {
-    X string `json:"x"`
-    Y string `json:"y"`
-}
-
-func foo(jdata []byte, i interface{}) {
-
-    t := reflect.TypeOf(i)
-    ts := reflect.New(reflect.SliceOf(t)).Interface()
-    err := json.Unmarshal(jdata, ts)
-    if err != nil {
-        fmt.Printf("\nDarn : %s\n", err)
-    }
-    fmt.Printf("thing slice : %#v\n", ts)
-}
-
-func main() {
-    things := []Thing{Thing{"z", "y"}, Thing{"a", "b"}}
-    jdata, err := json.Marshal(things)
-    if err != nil {
-        fmt.Printf("Unmarshal error : %s", err)
-    }
-
-    fmt.Printf("JDATA : %s\n", jdata)
-    foo(jdata, Thing{})
-}
-
-*/
