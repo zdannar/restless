@@ -60,19 +60,19 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, n interface{})
 
             if err = r.ParseForm(); err != nil {
                 http.Error(w, "Unable to parse form", http.StatusBadRequest)
-                Log.Errorf("Parsing form : %s", err)
+                log.Errorf("Parsing form : %s", err)
             }
 
             jString := []byte(r.PostForm.Get(colName))
             if err = json.Unmarshal(jString, i); err != nil {
                 http.Error(w, "Unable to unmarshal data", http.StatusBadRequest)
-                Log.Errorf("UnMarshal error : %s", err)
+                log.Errorf("UnMarshal error : %s", err)
                 return
             }
 
             if lastId, err = Insert(col, i); err != nil {
                 http.Error(w, "Unable to unmarshal data", http.StatusInternalServerError)
-                Log.Errorf("Insert Error : %#v", err)
+                log.Errorf("Insert Error : %#v", err)
                 return
             }
 
@@ -98,7 +98,7 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, n interface{}) 
 
         vars := mux.Vars(r)
         ids = vars["id"]
-        Log.Debugf("Provided ID = %s", ids)
+        log.Debugf("Provided ID = %s", ids)
 
         col := ns.DB(dbName).C(colName)
 
@@ -131,18 +131,18 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, n interface{}) 
 
             if err = json.Unmarshal([]byte(r.PostForm.Get(colName)), i); err != nil {
                 http.Error(w, "", http.StatusBadRequest)
-                Log.Errorf("UnMarshal error : %s", err)
+                log.Errorf("UnMarshal error : %s", err)
             }
 
             if err = UpdateId(col, i, id); err != nil {
                 http.Error(w, "Failed to update provided ID", http.StatusInternalServerError)
-                Log.Errorf("UnMarshal error : %s", err)
+                log.Errorf("UnMarshal error : %s", err)
             }
 
         case "DELETE":
             if err = RemoveId(col, id); err != nil {
                 http.Error(w, "Failed to remove provided ID", http.StatusInternalServerError)
-                Log.Errorf("Failed to remove id %s; error : %s", id, err)
+                log.Errorf("Failed to remove id %s; error : %s", id, err)
             }
         }
         return

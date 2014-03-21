@@ -5,7 +5,16 @@ import (
     "labix.org/v2/mgo"
 )
 
-var Log Logger
+var (
+    log         Logger      = nil
+    resp        Responser   = nil
+    Session     *mgo.Session = nil
+    MongoUrl                 = "NULL"
+    APIServAddr              = ":8080"
+)
+var ErrInvalidMongoUrl = errors.New("restless.MongoUrl is not set and a valid MongoDb session was not provided to restless.Session")
+
+
 
 type Logger interface {
     Debugf(string, ...interface{})
@@ -15,10 +24,15 @@ type Logger interface {
     Warningf(string, ...interface{})
 }
 
-var (
-    Session     *mgo.Session = nil
-    MongoUrl                 = "NULL"
-    APIServAddr              = ":8080"
-)
+func SetLogger(l *Logger) {
+    log = l
+}
 
-var ErrInvalidMongoUrl = errors.New("restless.MongoUrl is not set and a valid MongoDb session was not provided to restless.Session")
+
+type Responser interface {
+    Response(interface{}) (string, error)
+}
+
+func SetResponser(r Responser) {
+    resp = r
+}

@@ -10,7 +10,7 @@ import (
 var router *mux.Router
 
 func ListenAndServe() {
-    Log.Infof("RESTLESS started on %s", APIServAddr)
+    log.Infof("RESTLESS started on %s", APIServAddr)
     http.ListenAndServe(APIServAddr, nil)
 }
 
@@ -24,8 +24,8 @@ func AddHandler(dbname, collection string, ytype interface{}) error {
     colRoot := fmt.Sprintf("/%s", collection)
     colIdRoot := fmt.Sprintf("%s/{id}", colRoot)
 
-    Log.Debugf("Adding general handler (%s)", colRoot)
-    Log.Debugf("Adding ID based handler (%s)", colIdRoot)
+    log.Debugf("Adding general handler (%s)", colRoot)
+    log.Debugf("Adding ID based handler (%s)", colIdRoot)
 
     if router == nil {
         router = mux.NewRouter()
@@ -38,7 +38,7 @@ func AddHandler(dbname, collection string, ytype interface{}) error {
 
 func Register() {
     rpath := "/"
-    Log.Debugf("Setting root handler (%s)", rpath)
+    log.Debugf("Setting root handler (%s)", rpath)
     http.Handle(rpath, router)
 }
 
@@ -52,7 +52,7 @@ func getsess() (*mgo.Session, error) {
     if err = getmogurl(); err != nil {
         return nil, err
     }
-    Log.Infof("Establishing MongoDB connection for cloning(%s)", MongoUrl)
+    log.Infof("Establishing MongoDB connection for cloning(%s)", MongoUrl)
     return mgo.Dial(MongoUrl)
 }
 
