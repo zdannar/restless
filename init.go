@@ -24,7 +24,7 @@ type Logger interface {
     Warningf(string, ...interface{})
 }
 
-func SetLogger(l *Logger) {
+func SetLogger(l Logger) {
     log = l
 }
 

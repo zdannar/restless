@@ -1,8 +1,9 @@
-package restless/response
+package response
 
 import (
     "reflect"
     "strings"
+    "encoding/json"
 )
 
 func isSlice(i interface{}) bool {
@@ -20,7 +21,7 @@ func marshal(i interface{}) (string, error) {
     var jdata []byte
     var err error
 
-    if indent < 1 {
+    if respIndent < 1 {
         jdata, err = json.Marshal(i)
     } else {
         jdata, err = json.MarshalIndent(i, "", strings.Repeat(" ", respIndent))

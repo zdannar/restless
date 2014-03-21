@@ -1,11 +1,11 @@
-package restless/response
+package response
 
 import (
 )
 
 
 const (
-    RESTLESS_RESP_VER "0.0"
+    RESTLESS_RESP_VER = "0.0"
     INDENT_PRETTY = 4
 )
 

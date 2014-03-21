@@ -1,4 +1,4 @@
-package restless/response
+package response
 
 import (
 )
@@ -14,7 +14,10 @@ func New(d interface{}) *Response {
         rd.TotalItems = 1
     }
     rd.Items = d
-    return &Response{ApiVersion: apiVersion, Data: rd, RestlessVersion: RESTLESS_RESP_VER}
+    return &Response{
+        ApiVersion: apiVersion,
+        Data: rd,
+        RestlessVersion: RESTLESS_RESP_VER}
 }
 
 type Response struct {

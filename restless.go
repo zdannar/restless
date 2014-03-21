@@ -35,7 +35,6 @@ func UpdateId(c *mgo.Collection, i interface{}, id bson.ObjectId) error {
 func GetGenHandler(s *mgo.Session, dbName string, colName string, n interface{}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 
-        var jdata []byte
         var err error
 
         ns := s.Clone()
@@ -48,10 +47,14 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, n interface{})
         case "GET":
             i := reflect.New(reflect.SliceOf(reflect.TypeOf(n))).Interface()
             GetAll(col, i)
-            jdata, err = json.Marshal(i)
 
-            w.Header().Add("Content-Type", "application/json")
-            fmt.Fprintf(w, "[]%s=%s", colName, jdata)
+            r, err := resp.Response(i)
+            if err != nil {
+                http.Error(w, "Unable to parse form", http.StatusBadRequest)
+            } else {
+                w.Header().Add("Content-Type", "application/json")
+                fmt.Fprintf(w, "%s", r)
+            }
 
         case "POST":
             var lastId string
@@ -76,9 +79,6 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, n interface{})
                 return
             }
 
-            if jdata, err = json.Marshal(i); err != nil {
-                http.Error(w, "Marshal error", http.StatusInternalServerError)
-            }
             w.Header().Add("Location", fmt.Sprintf("%s/%s", r.URL, lastId))
             w.WriteHeader(http.StatusCreated)
         }
@@ -89,7 +89,6 @@ func GetGenHandler(s *mgo.Session, dbName string, colName string, n interface{})
 func GetIdHandler(s *mgo.Session, dbName string, colName string, n interface{}) http.HandlerFunc {
     return func(w http.ResponseWriter, r *http.Request) {
 
-        var jdata []byte
         var err error
         var ids string
 
@@ -115,14 +114,16 @@ func GetIdHandler(s *mgo.Session, dbName string, colName string, n interface{}) 
             return
         }
 
-        if jdata, err = json.Marshal(i); err != nil {
-            http.Error(w, "", http.StatusBadRequest)
-        }
-
         switch r.Method {
         case "GET":
-            w.Header().Add("Content-Type", "application/json")
-            fmt.Fprintf(w, "%s=%s", colName, jdata)
+
+            r, err := resp.Response(i)
+            if err != nil {
+                http.Error(w, "", http.StatusBadRequest)
+            } else {
+                w.Header().Add("Content-Type", "application/json")
+                fmt.Fprintf(w, "%s", r)
+            }
 
         case "PUT":
             if r.ParseForm(); err != nil {
