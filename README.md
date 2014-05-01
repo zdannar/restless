@@ -6,6 +6,12 @@ A simple implementation of building a REST API on top of MongoDB.
 
 More documentation and functionality to come...
 
+Current TODOS:
+- Align more closely with google JSON style guide.
+- Contemplate abstracting BSON.Id from being required in structure.
+- Add query format to restless.
+- Cleanup code, specifically GET/POST functionality into cleaner functions.
+
 ###INSTALL
 go get github.com/zdannar/restless
 
