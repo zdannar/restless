@@ -21,7 +21,7 @@ func hasLength(i interface{}) int {
     if !is {
         return -1
     }
-    if indirectly { 
+    if indirectly {
         return reflect.Indirect(reflect.ValueOf(i)).Len()
     }
     return reflect.ValueOf(i).Len()
