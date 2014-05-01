@@ -10,8 +10,8 @@ import (
     "reflect"
 )
 
-func GetAll(c *mgo.Collection, ip interface{}) {
-    c.Find(nil).All(ip)
+func GetAll(c *mgo.Collection, ip interface{}) error {
+    return c.Find(nil).All(ip)
 }
 
 func Insert(c *mgo.Collection, i interface{}) (string, error) {

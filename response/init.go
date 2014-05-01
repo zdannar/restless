@@ -4,13 +4,13 @@ import (
 )
 
 const (
-    RESTLESS_RESP_VER = "0.0"
+    RESTLESS_RESP_VER = "0.3"
     INDENT_PRETTY = 4
 )
 
 var (
     apiVersion string = "UNKNOWN"
-    respIndent int    = 0
+    respIndent int    = INDENT_PRETTY
 )
 
 func SetApiVersion(vstr string) {

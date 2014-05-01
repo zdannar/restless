@@ -36,7 +36,3 @@ func NewRespStr(d interface{}) (string, error) {
     r := New(d)
     return marshal(r)
 }
-
-
-
-
