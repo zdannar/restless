@@ -4,15 +4,25 @@ import (
     "reflect"
     "strings"
     "encoding/json"
+    //log "github.com/zdannar/flogger"
 )
 
-func isSlice(i interface{}) bool {
-    return reflect.TypeOf(i).Kind() == reflect.Slice
+func isSlice(i interface{}) (bool, bool) {
+    if reflect.TypeOf(i).Kind() == reflect.Ptr {
+        // Get Indirect and check for slice
+        return reflect.Indirect(reflect.ValueOf(i)).Kind() == reflect.Slice, true
+    }
+
+    return reflect.TypeOf(i).Kind() == reflect.Slice, false
 }
 
 func hasLength(i interface{}) int {
-    if !isSlice(i) {
+    is, indirectly := isSlice(i)
+    if !is {
         return -1
+    }
+    if indirectly { 
+        return reflect.Indirect(reflect.ValueOf(i)).Len()
     }
     return reflect.ValueOf(i).Len()
 }
